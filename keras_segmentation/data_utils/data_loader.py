@@ -191,8 +191,18 @@ def get_segmentation_array(image_input, nClasses,
     img = cv2.resize(img, (width, height), interpolation=cv2.INTER_NEAREST)
     img = img[:, :, 0]
 
-    for c in range(nClasses):
-        seg_labels[:, :, c] = (img == c).astype(int)
+    #captura os elementos que sao unicos no array
+    classes = np.unique(img)
+
+    #verifica se o numero de classes identificadas eh o mesmo que o numero de classes especificadas
+    if not len(classes) == nClasses:
+        raise DataLoaderError("get_segmentation_array: "
+                              "identified class different from specificied class numbers in image {0}"
+                              .format(image_input))
+
+    #itera sobre as classes criando as submatrizes referentes para cada uma das classes
+    for i, c in enumerate(classes):
+        seg_labels[:, :, i] = (img == c).astype(int)
 
     if not no_reshape:
         seg_labels = np.reshape(seg_labels, (width*height, nClasses))
