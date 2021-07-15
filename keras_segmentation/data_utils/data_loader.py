@@ -30,7 +30,7 @@ class_colors = [(random.randint(0, 255), random.randint(
 
 
 ACCEPTABLE_IMAGE_FORMATS = [".jpg", ".jpeg", ".png", ".bmp"]
-ACCEPTABLE_SEGMENTATION_FORMATS = [".png", ".bmp"]
+ACCEPTABLE_SEGMENTATION_FORMATS = [".png", ".bmp", ".jpg"]
 
 
 class DataLoaderError(Exception):
