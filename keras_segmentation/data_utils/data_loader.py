@@ -170,7 +170,7 @@ def get_image_array(image_input,
 
 
 def get_segmentation_array(image_input, nClasses,
-                           width, height, no_reshape=False, read_image_type=1):
+                           width, height, no_reshape=False, read_image_type=1, obrigatory_dataset_class = 0):
     """ Load segmentation array from input """
 
     seg_labels = np.zeros((height, width, nClasses))
@@ -193,6 +193,12 @@ def get_segmentation_array(image_input, nClasses,
 
     #captura os elementos que sao unicos no array
     classes = np.unique(img)
+    
+    if not obrigatory_dataset_class is None:
+        if not obrigatory_dataset_class in classes:
+            classes = np.append(classes, obrigatory_dataset_class)
+            print('insserting mandatory background class in array of identified classes')
+    
 
     #verifica se o numero de classes identificadas eh o mesmo que o numero de classes especificadas
     if not len(classes) == nClasses:
