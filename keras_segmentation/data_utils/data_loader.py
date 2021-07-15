@@ -197,8 +197,8 @@ def get_segmentation_array(image_input, nClasses,
     #verifica se o numero de classes identificadas eh o mesmo que o numero de classes especificadas
     if not len(classes) == nClasses:
         raise DataLoaderError("get_segmentation_array: "
-                              "identified class different from specificied class numbers in image {0}"
-                              .format(image_input))
+                              "identified class different from specificied class numbers in image. Identified classes: {0}"
+                              .format(classes))
 
     #itera sobre as classes criando as submatrizes referentes para cada uma das classes
     for i, c in enumerate(classes):
