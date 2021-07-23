@@ -15,7 +15,7 @@ def get_iou(gt, pr, n_classes):
 
 #dice coefficient implementation
 def dice_coef(y_true, y_pred, smooth=1):
-    print('true: ', y_true.shape)
+    print('true: ', y_true)
     print('predict: ', y_pred)
     intersection = K.sum(y_true * y_pred, axis=[1,2,3])
     union = K.sum(y_true, axis=[1,2,3]) + K.sum(y_pred, axis=[1,2,3])
