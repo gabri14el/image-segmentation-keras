@@ -9,6 +9,7 @@ from tensorflow.keras.callbacks import ModelCheckpoint
 import tensorflow as tf
 import glob
 import sys
+from .metrics import dice_coef
 
 def find_latest_checkpoint(checkpoints_path, fail_safe=True):
 
@@ -55,6 +56,7 @@ class CheckpointsCallback(Callback):
         if self.checkpoints_path is not None:
             self.model.save_weights(self.checkpoints_path + "." + str(epoch))
             print("saved ", self.checkpoints_path + "." + str(epoch))
+
 
 
 def train(model,
@@ -118,7 +120,7 @@ def train(model,
 
         model.compile(loss=loss_k,
                       optimizer=optimizer_name,
-                      metrics=['accuracy'])
+                      metrics=['accuracy', tf.keras.metrics.MeanIoU(num_classes=n_classes), dice_coef])
 
     if checkpoints_path is not None:
         config_file = checkpoints_path + "_config.json"
