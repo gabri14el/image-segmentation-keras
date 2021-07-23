@@ -9,7 +9,7 @@ from tensorflow.keras.callbacks import ModelCheckpoint
 import tensorflow as tf
 import glob
 import sys
-from .metrics import dice_coef
+from .metrics import dice_coef, f1_m
 
 def find_latest_checkpoint(checkpoints_path, fail_safe=True):
 
@@ -120,7 +120,7 @@ def train(model,
 
         model.compile(loss=loss_k,
                       optimizer=optimizer_name,
-                      metrics=['accuracy', tf.keras.metrics.MeanIoU(num_classes=n_classes), dice_coef])
+                      metrics=['accuracy', tf.keras.metrics.MeanIoU(num_classes=n_classes), f1_m])
 
     if checkpoints_path is not None:
         config_file = checkpoints_path + "_config.json"
