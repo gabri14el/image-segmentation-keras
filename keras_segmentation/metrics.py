@@ -1,5 +1,5 @@
 import numpy as np
-import tensorflow as tf
+import tensorflow.keras.backend as K
 
 EPS = 1e-12
 
@@ -15,6 +15,6 @@ def get_iou(gt, pr, n_classes):
 
 #dice coefficient implementation
 def dice_coef(y_true, y_pred, smooth=1):
-    intersection = tf.sum(y_true * y_pred, axis=[1,2,3])
-    union = tf.sum(y_true, axis=[1,2,3]) + tf.sum(y_pred, axis=[1,2,3])
-    return tf.mean( (2. * intersection + smooth) / (union + smooth), axis=0)
+    intersection = K.sum(y_true * y_pred, axis=[1,2,3])
+    union = K.sum(y_true, axis=[1,2,3]) + K.sum(y_pred, axis=[1,2,3])
+    return K.mean( (2. * intersection + smooth) / (union + smooth), axis=0)
