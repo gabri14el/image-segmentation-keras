@@ -10,6 +10,7 @@ import tensorflow as tf
 import glob
 import sys
 from .metrics import dice_coef, f1_m
+import tensorflow.keras.backend as K
 
 def find_latest_checkpoint(checkpoints_path, fail_safe=True):
 
@@ -86,6 +87,9 @@ def train(model,
           custom_augmentation=None,
           other_inputs_paths=None,
           preprocessing=None,
+          fine_tuning = False,
+          layer_fine_tuning = None,
+          freeze_encoder = False,
           read_image_type=1  # cv2.IMREAD_COLOR = 1 (rgb),
                              # cv2.IMREAD_GRAYSCALE = 0,
                              # cv2.IMREAD_UNCHANGED = -1 (4 channels like RGBA)
@@ -106,6 +110,19 @@ def train(model,
     input_width = model.input_width
     output_height = model.output_height
     output_width = model.output_width
+
+    #freeze the encoder if the fine tuning is activated
+    if fine_tuning:
+        assert layer_fine_tuning is not None
+
+        #get the index of the layer where the encoder ends
+        layer_names = [layer.name for layer in model.layers]
+        layer_idx = layer_names.index(layer_fine_tuning)
+
+        #freeze the layers
+        for layer in model.layers[:layer_idx+1]:
+            layer.trainable = False
+    
 
     if validate:
         assert val_images is not None
@@ -199,14 +216,46 @@ def train(model,
         callbacks = []
 
     print(model.summary())
+
+    
     
     if not validate:
         model.fit(train_gen, steps_per_epoch=steps_per_epoch,
-                  epochs=epochs, callbacks=callbacks, initial_epoch=initial_epoch)
+                epochs=epochs, callbacks=callbacks, initial_epoch=initial_epoch)
     else:
         model.fit(train_gen,
-                  steps_per_epoch=steps_per_epoch,
-                  validation_data=val_gen,
-                  validation_steps=val_steps_per_epoch,
-                  epochs=epochs, callbacks=callbacks,
-                  use_multiprocessing=gen_use_multiprocessing, initial_epoch=initial_epoch)
+                steps_per_epoch=steps_per_epoch,
+                validation_data=val_gen,
+                validation_steps=val_steps_per_epoch,
+                epochs=epochs, callbacks=callbacks,
+                use_multiprocessing=gen_use_multiprocessing, initial_epoch=initial_epoch)
+    
+    #if fine tuning was activated retrain unfreezing all the layers
+    if fine_tuning:
+        #set all the layers to be trained
+        for layer in model.layers:
+                layer.trainable = True
+        
+        #get a optimizer with reduced learning rate in 10e-2 rate
+        opt = tf.keras.optimizers.get(optimizer_name)
+        K.set_value(opt.learning_rate, opt.learning_rate.numpy()/100)
+
+        #recompile the model
+        model.compile(loss=loss_k,
+                      optimizer=optimizer_name,
+                      metrics=['accuracy', tf.keras.metrics.MeanIoU(num_classes=n_classes), f1_m])
+
+        #train the model
+        if not validate:
+            model.fit(train_gen, steps_per_epoch=steps_per_epoch,
+                    epochs=epochs, callbacks=callbacks, initial_epoch=initial_epoch)
+        else:
+            model.fit(train_gen,
+                    steps_per_epoch=steps_per_epoch,
+                    validation_data=val_gen,
+                    validation_steps=val_steps_per_epoch,
+                    epochs=epochs, callbacks=callbacks,
+                    use_multiprocessing=gen_use_multiprocessing, initial_epoch=initial_epoch)
+    
+
+
