@@ -90,6 +90,7 @@ def train(model,
           fine_tuning = False,
           layer_fine_tuning = None,
           freeze_encoder = False,
+          learning_rate = None,
           read_image_type=1  # cv2.IMREAD_COLOR = 1 (rgb),
                              # cv2.IMREAD_GRAYSCALE = 0,
                              # cv2.IMREAD_UNCHANGED = -1 (4 channels like RGBA)
@@ -134,6 +135,10 @@ def train(model,
             loss_k = masked_categorical_crossentropy
         else:
             loss_k = 'categorical_crossentropy'
+
+        if learning_rate is not None:
+            optimizer_name = tf.keras.optimizers.get(optimizer_name)
+            K.set_value(optimizer_name.learning_rate, learning_rate)
 
         model.compile(loss=loss_k,
                       optimizer=optimizer_name,
@@ -238,14 +243,21 @@ def train(model,
         
         #get a optimizer with reduced learning rate in 10e-2 rate
         opt = tf.keras.optimizers.get(optimizer_name)
-        K.set_value(opt.learning_rate, opt.learning_rate.numpy()/100)
+
+        #if learning rate is defined set the new learning rate based in the defined value, if not, set based in the default value
+        lr = opt.learning_rate.numpy()/100
+        if learning_rate is not None:
+            lr = learning_rate/100
+        
+        #set the value
+        K.set_value(opt.learning_rate, lr)
 
         #recompile the model
         model.compile(loss=loss_k,
                       optimizer=optimizer_name,
                       metrics=['accuracy', tf.keras.metrics.MeanIoU(num_classes=n_classes), f1_m])
 
-        #train the model
+        #retrain the model
         if not validate:
             model.fit(train_gen, steps_per_epoch=steps_per_epoch,
                     epochs=epochs, callbacks=callbacks, initial_epoch=initial_epoch)
