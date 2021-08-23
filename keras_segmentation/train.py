@@ -198,6 +198,8 @@ def train(model,
     if callbacks is None:
         callbacks = []
 
+    print(model.summary())
+    
     if not validate:
         model.fit(train_gen, steps_per_epoch=steps_per_epoch,
                   epochs=epochs, callbacks=callbacks, initial_epoch=initial_epoch)
