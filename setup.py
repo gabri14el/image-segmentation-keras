@@ -24,8 +24,7 @@ setup(name="keras_segmentation",
             ]
       },
       install_requires=[
-            "h5py<=2.10.0",
-            "Keras"+keras_ver,
+            "tensorflow>=2.2",
             "imageio==2.5.0",
             "imgaug>=0.4.0",
             "opencv-python"+cv_ver,
