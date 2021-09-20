@@ -82,6 +82,7 @@ def train(model,
           ignore_zero_class=False,
           optimizer_name='adam',
           do_augment=False,
+          loss = None,
           augmentation_name="aug_all",
           callbacks=None,
           custom_augmentation=None,
@@ -130,11 +131,13 @@ def train(model,
         assert val_annotations is not None
 
     if optimizer_name is not None:
-
-        if ignore_zero_class:
-            loss_k = masked_categorical_crossentropy
+        if loss is None:
+            if ignore_zero_class:
+                loss_k = masked_categorical_crossentropy
+            else:
+                loss_k = 'categorical_crossentropy'
         else:
-            loss_k = 'categorical_crossentropy'
+            loss_k = loss
 
         if learning_rate is not None:
             optimizer_name = tf.keras.optimizers.get(optimizer_name)
