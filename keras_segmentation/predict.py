@@ -174,7 +174,7 @@ def predict(model=None, inp=None, out_fname=None,
 
 #method used to add images to your respective classes returning a dataset with all images in the files
 def directory_from_df_with_class(directory):
-    df = pd.DataFrame(columns=['path', 'class', 'dataset'])
+    df = pd.DataFrame(columns=['path', 'class', 'name'])
     for r, d, f in os.walk(directory):
         for file in f:
             row = {}
