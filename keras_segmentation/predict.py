@@ -228,7 +228,7 @@ def predict_multiple(model=None, inps=None, inp_dir=None, out_dir=None,
                 else:
                     out_fname = os.path.join(out_dir, str(i) + ".jpg")
             else:
-                os.makedirs(os.path.join(out_dir, classes[i], exist_ok=True))
+                os.makedirs(os.path.join(out_dir, classes[i]), exist_ok=True)
                 out_fname = os.path.join(out_dir, classes[i], names[i])
 
 
