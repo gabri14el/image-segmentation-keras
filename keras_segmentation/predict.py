@@ -1,3 +1,4 @@
+from genericpath import exists
 import glob
 import random
 import json
@@ -13,6 +14,7 @@ from .train import find_latest_checkpoint
 from .data_utils.data_loader import get_image_array, get_segmentation_array,\
     DATA_LOADER_SEED, class_colors, get_pairs_from_paths
 from .models.config import IMAGE_ORDERING
+import pandas as pd
 
 
 random.seed(DATA_LOADER_SEED)
@@ -170,20 +172,42 @@ def predict(model=None, inp=None, out_fname=None,
 
     return pr
 
+#method used to add images to your respective classes returning a dataset with all images in the files
+def directory_from_df_with_class(directory):
+    df = pd.DataFrame(columns=['path', 'class', 'dataset'])
+    for r, d, f in os.walk(directory):
+        for file in f:
+            row = {}
+            row['path'] = os.path.join(r, file)
+            row['class'] = row['path'].split(os.path.sep)[-2]
+            row['name'] = file
+            #print(row['class'])
+            token = file.split('.').lower()
+            if 'jpg' in token or 'png' in token or 'jpeg' in token:
+                df= df.append(row, ignore_index=True)
+    return df
 
 def predict_multiple(model=None, inps=None, inp_dir=None, out_dir=None,
                      checkpoints_path=None, overlay_img=False,
                      class_names=None, show_legends=False, colors=class_colors,
-                     prediction_width=None, prediction_height=None, read_image_type=1):
+                     prediction_width=None, prediction_height=None, read_image_type=1,
+                     class_folders = False):
 
     if model is None and (checkpoints_path is not None):
         model = model_from_checkpoint_path(checkpoints_path)
 
     if inps is None and (inp_dir is not None):
-        inps = glob.glob(os.path.join(inp_dir, "*.jpg")) + glob.glob(
-            os.path.join(inp_dir, "*.png")) + \
-            glob.glob(os.path.join(inp_dir, "*.jpeg"))
-        inps = sorted(inps)
+        if not class_folders:
+            inps = glob.glob(os.path.join(inp_dir, "*.jpg")) + glob.glob(
+                os.path.join(inp_dir, "*.png")) + \
+                glob.glob(os.path.join(inp_dir, "*.jpeg"))
+            inps = sorted(inps)
+        else:
+            df = directory_from_df_with_class(inp_dir)
+            inps = df['path'].values
+            classes =df['class'].values
+            names = df['name'].values
+            
 
     assert type(inps) is list
 
@@ -193,24 +217,29 @@ def predict_multiple(model=None, inps=None, inp_dir=None, out_dir=None,
         if not os.path.exists(out_dir):
             os.makedirs(out_dir)
 
-
+    
     for i, inp in enumerate(tqdm(inps)):
         if out_dir is None:
             out_fname = None
         else:
-            if isinstance(inp, six.string_types):
-                out_fname = os.path.join(out_dir, os.path.basename(inp))
+            if not class_folders:
+                if isinstance(inp, six.string_types):
+                    out_fname = os.path.join(out_dir, os.path.basename(inp))
+                else:
+                    out_fname = os.path.join(out_dir, str(i) + ".jpg")
             else:
-                out_fname = os.path.join(out_dir, str(i) + ".jpg")
+                os.makedirs(os.path.join(out_dir, classes[i], exist_ok=True))
+                out_fname = os.path.join(out_dir, classes[i], names[i])
+
 
         pr = predict(model, inp, out_fname,
-                     overlay_img=overlay_img, class_names=class_names,
-                     show_legends=show_legends, colors=colors,
-                     prediction_width=prediction_width,
-                     prediction_height=prediction_height, read_image_type=read_image_type)
+                    overlay_img=overlay_img, class_names=class_names,
+                    show_legends=show_legends, colors=colors,
+                    prediction_width=prediction_width,
+                    prediction_height=prediction_height, read_image_type=read_image_type)
 
         all_prs.append(pr)
-
+    
     return all_prs
 
 
