@@ -10,10 +10,10 @@ if sys.version_info.major < 3:
 
 
 setup(name="keras_segmentation",
-      version="0.3.0",
+      version="0.3.1",
       description="Image Segmentation toolkit for keras",
-      author="Divam Gupta",
-      author_email='divamgupta@gmail.com',
+      author="Divam Gupta modified by Gabriel Carneiro",
+      author_email='divamgupta@gmail.com, gabri14el@gmail.com',
       platforms=["any"],  # or more specific, e.g. "win32", "cygwin", "osx"
       license="GPLv3",
       url="https://github.com/divamgupta/image-segmentation-keras",

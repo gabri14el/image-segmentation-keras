@@ -182,7 +182,7 @@ def directory_from_df_with_class(directory):
             row['class'] = row['path'].split(os.path.sep)[-2]
             row['name'] = file
             #print(row['class'])
-            token = file.split('.').lower()
+            token = file.split('.')[-1].lower()
             if 'jpg' in token or 'png' in token or 'jpeg' in token:
                 df= df.append(row, ignore_index=True)
     return df
