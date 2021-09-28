@@ -204,7 +204,7 @@ def predict_multiple(model=None, inps=None, inp_dir=None, out_dir=None,
             inps = sorted(inps)
         else:
             df = directory_from_df_with_class(inp_dir)
-            inps = df['path'].values
+            inps = df['path'].values.tolist()
             classes =df['class'].values
             names = df['name'].values
             
